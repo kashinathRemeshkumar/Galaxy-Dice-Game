@@ -22,5 +22,5 @@ Additionally, certain cells in the galaxy are designated as “Quiz Cells.” Wh
 - Kashinat Remeshkumar
 - Kevin Varghese Theveril
 - Dan Philip Bobby
-- Hari Krishnan
+- Hari Krishnan S
 - Stephin Reji Mathew
