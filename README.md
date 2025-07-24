@@ -1,8 +1,8 @@
 # Galaxy-Dice-Game
 
+##Team-Members
 
 
-##Team Members
 -Abhijith R
 -Ashwin Sateesh
 -Kashinat Remeshkumar
