@@ -4,7 +4,7 @@
 ## Team Members
 
 
-- Abhijith
+- Abhijith R
 - Ashwin Sateesh
 - Kashinat Remeshkumar
 - Kevin Varghese Theveril
