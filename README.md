@@ -1,2 +1,12 @@
 # Galaxy-Dice-Game
-A multiplayer online game using java
+
+
+
+##Team Members
+-Abhijith R
+-Ashwin Sateesh
+-Kashinat Remeshkumar
+-Kevin Varghese Theveril
+-Dan Philip Bobby
+-Hari Krishnan
+-Stephin Reji Mathew
