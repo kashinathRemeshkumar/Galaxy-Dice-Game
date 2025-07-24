@@ -1,12 +1,13 @@
 # Galaxy-Dice-Game
 
-##Team-Members
+
+## Team Members
 
 
--Abhijith R/n
--Ashwin Sateesh
--Kashinat Remeshkumar
--Kevin Varghese Theveril
--Dan Philip Bobby
--Hari Krishnan
--Stephin Reji Mathew
+- Abhijith
+- Ashwin Sateesh
+- Kashinat Remeshkumar
+- Kevin Varghese Theveril
+- Dan Philip Bobby
+- Hari Krishnan
+- Stephin Reji Mathew
