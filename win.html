@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=.0" />
+  <title>Dice Galaxy – Win!</title>
+  <!-- Tailwind CSS (using CDN for simplicity) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<!-- === Dice Galaxy: Landing-&-Shooting-Stars FX === -->
+<style>
+.body-stars::before,
+.body-stars::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(2px 2px at 20px 30px #fff, transparent 10%),
+    radial-gradient(3px 3px at 150px 120px #ddd, transparent 40%),
+    radial-gradient(1px 1px at 90px 200px #fff, transparent 40%);
+  background-size: 250px 250px;
+  animation: twinkle 7s linear infinite;
+}
+@keyframes twinkle {
+  from {transform: translateY(0);}
+  to   {transform: translateY(450px);}
+}
+
+/* 2. Re-usable shooting-star utility */
+.shooting-star {
+  position: fixed;
+  top: -4rem;
+  width: .45rem; height: .5rem;
+  background: linear-gradient(-45deg,#fffbfb 0%,rgba(255, 255, 255, 0) 70%);
+  box-shadow: 0 0 6px 2px #fdfbfb;
+  transform: rotate(45deg);
+  animation: shoot 2.5s linear infinite;
+}
+@keyframes shoot {
+  0%   {transform: translate(0,0) rotate(45deg);}
+  100% {transform: translate(-120vw,120vh) rotate(45deg);}
+}
+
+/* Delay helpers so each star launches at a different time */
+.shooting-star:nth-child(2){animation-delay:5.8s;}
+.shooting-star:nth-child(3){animation-delay:10.6s;}
+.shooting-star:nth-child(4){animation-delay:20.4s;}
+.shooting-star:nth-child(5){animation-delay:30.2s;}
+
+/* 3. Spaceship landing animation */
+#landing-ship {
+  @apply mx-auto w-48 md:w-56;       /* Tailwind utilities still work */
+  animation: descend 1.8s ease-out forwards,
+             bounce 0.9s 1.8s ease-out;
+}
+@keyframes descend {
+  from {transform: translateY(-120vh) scale(1.1) rotate(-10deg);}
+  70%  {transform: translateY(0)       scale(1)   rotate(0deg);}
+  to   {transform: translateY(-4px)    scale(1)   rotate(0deg);}
+}
+@keyframes bounce {
+  0%   {transform: translateY(-4px);}
+  40%  {transform: translateY(0);}
+  60%  {transform: translateY(-2px);}
+  100% {transform: translateY(0);}
+}
+</style>
+
+<<body
+  class="min-h-screen flex flex-col items-center justify-center text-white relative overflow-hidden"
+  style="background-image: url('image8.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+
+  <!-- Spaceship landing on Planet Zeta -->
+  <img id="landing-ship" src="spaceship.png" alt="Spaceship Landing on Planet Zeta" class="w-32 " />
+ 
+  <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-center">
+    Congratulations, Captain!
+  </h1>
+
+  <!-- Dynamic roll count -->
+  <p class="text-xl md:text-2xl mb-8" id="rollsMessage">
+    You reached Planet Zeta in <span id="rollsCount">--</span> rolls!
+  </p>
+
+ 
+  <div class="flex flex-col sm:flex-row gap-4">
+    <!-- Play Again -->
+    <button
+      onclick="window.location.href='/start';"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+      Play Again
+    </button>
+
+    <!--  Share Score -->
+    <button
+      onclick="shareScore();"
+      class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300">
+      Share Score
+    </button>
+  </div>
+
+
+  <audio id="victorySound" src="victory.mp3" preload="auto"></audio>
+
+  <script>
+    /* ----- Fetch roll count from session or query param ----- */
+    // Example: win.html?rolls=14
+    const urlParams = new URLSearchParams(window.location.search);
+    const rolls = urlParams.get('rolls') || '--';
+    document.getElementById('rollsCount').textContent = rolls;
+
+    // Play sound once DOM is loaded
+    window.addEventListener('DOMContentLoaded', () => {
+    const victorySound = document.getElementById('victorySound');
+    victorySound.play().catch(() => {
+      // If autoplay fails, play on first user interaction
+      const playOnClick = () => {
+        victorySound.play();
+        window.removeEventListener('click', playOnClick);
+      };
+      window.addEventListener('click', playOnClick);
+    });
+  });
+
+    /* ----- Share API helper ----- */
+    function shareScore() {
+      const text = `I reached Planet Zeta in ${rolls} rolls! Can you beat my journey in Dice Galaxy?`;
+      if (navigator.share) {
+        navigator
+          .share({
+            title: 'Dice Galaxy – Journey to Planet Zeta',
+            text,
+            url: window.location.origin
+          })
+          .catch(err => console.error('Share failed:', err));
+      } else {
+        prompt('Copy and share your victory:', text);
+      }
+    }
+  </script>
+</body>
+</html>
