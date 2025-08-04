@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dice Galaxy – Play</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-size: cover;
+      background-position: center;
+    }
+    .log-box {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #rocketIcon {
+      position: absolute;
+      top: -1rem;
+      font-size: 2.5rem;
+      transition: left 0.3s ease-in-out;
+      z-index: 20;
+      pointer-events: none;
+    }
+    #planetZeta {
+      position: absolute;
+      right: -1rem;
+      top: -1.5rem;
+      font-size: 4rem;
+      z-index: 10;
+    }
+
+    /* segmented bar */
+    .progress-segment {
+      flex: 1 1 0;
+      height: 100%;
+      position: relative;
+      border-right: 1px solid rgba(255,255,255,0.4);
+    }
+    .tooltip {
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      white-space: nowrap;
+      display: none;
+      z-index: 50;
+    }
+    .progress-segment:hover .tooltip {
+      display: block;
+    }
+
+    /* progress overlay green */
+    #progressBar {
+      background: linear-gradient(90deg, #22c55e, #10b981) !important;
+      box-shadow: 0 0 8px rgba(16,185,129,0.8);
+    }
+
+    /* red flash overlay */
+    #redFlash {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 0, 0, 0.5);
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body id="gameBody" class="text-white min-h-screen font-sans" style="background-image: url('assets/bgInput.jpg');">
+  <div class="flex flex-col items-center justify-center min-h-screen p-6">
+    <img src="assets/logoDisplay.png" alt="Logo" class="mb-4 max-h-64" />
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full max-w-4xl">
+      <div class="bg-gray-800 bg-opacity-70 rounded-lg p-4 text-center">
+        <h3 class="text-lg font-semibold mb-2">Current Position</h3>
+        <p class="text-2xl font-bold text-blue-400" id="totalDistance">0</p>
+        <p class="text-sm text-gray-400">/ 60 units</p>
+      </div>
+      <div class="bg-gray-800 bg-opacity-70 rounded-lg p-4 text-center">
+        <h3 class="text-lg font-semibold mb-2">Score</h3>
+        <p class="text-2xl font-bold text-green-400" id="scoreValue">0</p>
+      </div>
+      <div class="bg-gray-800 bg-opacity-70 rounded-lg p-4 text-center">
+        <h3 class="text-lg font-semibold mb-2">Rolls</h3>
+        <p class="text-2xl font-bold text-yellow-400" id="totalRolls">0</p>
+      </div>
+    </div>
+
+    <!-- Progress + Events -->
+    <div class="relative w-full max-w-5xl mb-4">
+      <div class="relative w-full h-16 bg-gray-900 rounded-lg border-2 border-indigo-500 overflow-hidden flex">
+        <div id="segmentsContainer" class="flex w-full h-full relative"></div>
+        <div id="rocketIcon">🚀</div>
+        <div id="planetZeta">🪐</div>
+        <div id="progressBar" class="absolute top-0 left-0 h-full rounded-l-lg transition-all duration-500 pointer-events-none" style="width:0%;"></div>
+      </div>
+    </div>
+
+    <!-- Dice & Roll -->
+    <img id="dice" src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Alea_1.png" class="w-20 h-20 mb-4" />
+    <button onclick="rollDice()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-6 py-2 rounded shadow-lg mb-2">🎲 Roll Dice</button>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+      <div class="bg-white text-black p-6 rounded shadow-lg max-w-md w-full">
+        <h2 class="text-lg font-bold mb-2">🧠 Quiz Challenge!</h2>
+        <p id="quizQuestion"></p>
+        <input type="text" id="quizAnswer" class="border p-2 w-full mb-2" placeholder="Your answer..." />
+        <button onclick="submitQuizAnswer()" class="bg-indigo-600 text-white px-4 py-1 rounded">Submit</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="mt-6 w-full max-w-2xl bg-black bg-opacity-50 p-4 rounded shadow-inner log-box">
+      <h2 class="text-lg font-semibold mb-2 text-indigo-300">📜 Captain’s Log</h2>
+      <ul id="log" class="space-y-1 text-sm text-purple-200">
+        <li>Welcome aboard, Captain.</li>
+      </ul>
+    </div>
+
+    <!-- How to Play -->
+    <div class="mt-10 bg-gray-800 bg-opacity-70 rounded-lg p-6 max-w-3xl w-full">
+      <h3 class="text-xl font-bold mb-4 flex items-center">
+        <i class="fas fa-info-circle mr-2 text-blue-400"></i> How to Play
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 class="font-semibold mb-2 text-blue-300">Basic Rules</h4>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-start"><i class="fas fa-dice mr-2 mt-1 text-yellow-400"></i> Roll the dice to move 1–6 units through space</li>
+            <li class="flex items-start"><i class="fas fa-star mr-2 mt-1 text-green-400"></i> Reach Planet Zeta at position 60 to win</li>
+            <li class="flex items-start"><i class="fas fa-history mr-2 mt-1 text-purple-400"></i> Each roll increases your score</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-2 text-blue-300">Space Symbols</h4>
+          <ul class="space-y-2 text-sm">
+            <li><span class="text-yellow-400">❓ Quiz Cell:</span> Answer correctly to gain +5 units</li>
+            <li><span class="text-green-400">🌀 Wormhole:</span> Jump forward 10 units</li>
+            <li><span class="text-red-400">🕳️ Black Hole:</span> Pulled back 20 units</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <a href="spectator.html" class="text-indigo-300 underline">👁 View as Spectator</a>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="bgMusic" loop autoplay style="display:none" src="assets/musicInput.mp3"></audio>
+    <audio id="diceSound" preload="auto" src="assets/dice_roll.mp3"></audio>
+    <audio id="soundGood" preload="auto" src="assets/good.mp3"></audio>
+    <audio id="soundBad" preload="auto" src="assets/bad.mp3"></audio>
+  </div>
+
+  <script>
+    let totalRolls = 0;
+    let totalDistance = 0;
+    const maxDistance = 60;
+
+    function generateSpacedCells(count, minGap, exclude = []) {
+      const cells = [];
+      let tries = 0;
+      while (cells.length < count && tries < 2000) {
+        tries++;
+        const candidate = Math.floor(Math.random() * (maxDistance + 1));
+        if (exclude.includes(candidate)) continue;
+        if (cells.some(c => Math.abs(c - candidate) < minGap)) continue;
+        cells.push(candidate);
+      }
+      return cells;
+    }
+
+    let quizCells = [], wormholeCells = [], blackholeCells = [];
+
+    const quizPool = [
+      { q: "What is the largest planet in our solar system?", a: "jupiter" },
+      { q: "Which planet is known as the Red Planet?", a: "mars" },
+      { q: "How many planets are in our solar system?", a: "8" },
+      { q: "Which planet has the most moons?", a: "saturn" },
+      { q: "What galaxy is Earth located in?", a: "milky way" },
+      { q: "Which planet has rings?", a: "saturn" },
+      { q: "What is the hottest planet in our solar system?", a: "venus" },
+      { q: "Which planet is farthest from the Sun?", a: "neptune" },
+      { q: "Which planet is famous for its Great Red Spot?", a: "jupiter" },
+      { q: "What is the name of our moon?", a: "moon" },
+      { q: "Which planet is tilted on its side?", a: "uranus" }
+    ].sort(() => Math.random() - 0.5);
+    let quizIndex = 0;
+
+    function playGood() {
+      const s = document.getElementById("soundGood");
+      if (!s) return;
+      s.currentTime = 0;
+      s.volume = 0.7;
+      s.play().catch(() => {});
+    }
+    function playBad() {
+      const s = document.getElementById("soundBad");
+      if (!s) return;
+      s.currentTime = 0;
+      s.volume = 0.7;
+      s.play().catch(() => {});
+    }
+    function playDiceSound() {
+      const s = document.getElementById("diceSound");
+      if (!s) return;
+      s.currentTime = 0;
+      s.volume = 0.8;
+      s.play().catch(() => {});
+    }
+
+    function rollDice() {
+      if (totalDistance >= maxDistance) return;
+
+      playDiceSound();
+
+      const value = Math.floor(Math.random() * 6) + 1;
+      totalRolls++;
+      totalDistance += value;
+
+      document.getElementById("dice").src = `https://upload.wikimedia.org/wikipedia/commons/${["2/2c/Alea_1","b/b8/Alea_2","2/2f/Alea_3","8/8d/Alea_4","5/55/Alea_5","f/f4/Alea_6"][value - 1]}.png`;
+      addLog(`🎲 Rolled a ${value}! Moved ${value} units.`);
+
+      if (quizCells.includes(totalDistance)) {
+        const q = quizPool[quizIndex % quizPool.length];
+        quizIndex++;
+        document.getElementById("quizQuestion").textContent = q.q;
+        document.getElementById("quizModal").dataset.answer = q.a;
+        document.getElementById("quizModal").classList.remove("hidden");
+        updateStats(); // show intermediate
+        return;
+      }
+
+      triggerEvent();
+      updateStats();
+    }
+
+    function submitQuizAnswer() {
+      const answer = document.getElementById("quizAnswer").value.trim().toLowerCase();
+      const correct = document.getElementById("quizModal").dataset.answer;
+      document.getElementById("quizModal").classList.add("hidden");
+      document.getElementById("quizAnswer").value = "";
+
+      if (answer === correct) {
+        totalDistance += 5;
+        playGood();
+        addLog("✅ Correct answer! Gained 5 units.");
+      } else {
+        totalDistance -= 15;
+        playBad();
+        flashRed();
+        addLog("❌ Incorrect answer! Lost 15 units.");
+      }
+      triggerEvent();
+      updateStats();
+    }
+
+    function triggerEvent() {
+      if (wormholeCells.includes(totalDistance)) {
+        totalDistance += 10;
+        playGood();
+        addLog("🌀 Wormhole! Leapt forward 10 units.");
+      } else if (blackholeCells.includes(totalDistance)) {
+        totalDistance = Math.max(-1, totalDistance - 20);
+        playBad();
+        flashRed();
+        addLog("🕳️ Black hole! Lost 20 units.");
+      }
+    }
+
+    function flashRed() {
+      if (document.getElementById("redFlash")) return;
+      const f = document.createElement("div");
+      f.id = "redFlash";
+      document.body.appendChild(f);
+      setTimeout(() => {
+        f.style.opacity = "0";
+        f.addEventListener("transitionend", () => f.remove(), { once: true });
+      }, 100);
+    }
+
+    function updateStats() {
+      if (totalDistance >= maxDistance) {
+        totalDistance = maxDistance;
+        playGood();
+        addLog("🌟 You've reached 🪐! Mission complete!");
+        window.location.href = `win.html?rolls=${totalRolls}`;
+        return;
+      }
+      if (totalDistance <= -1) {
+        playBad();
+        addLog("💥 Mission failed! You drifted back to Earth.");
+        window.location.href = "lost.html";
+        return;
+      }
+
+      const progressPercent = Math.min(totalDistance / maxDistance, 1);
+      document.getElementById("totalRolls").textContent = totalRolls;
+      document.getElementById("scoreValue").textContent = totalDistance;
+      document.getElementById("totalDistance").textContent = totalDistance;
+      document.getElementById("progressBar").style.width = `${progressPercent * 100}%`;
+
+      const trackWidth = document.getElementById("segmentsContainer").offsetWidth;
+      const rocketX = progressPercent * trackWidth;
+      document.getElementById("rocketIcon").style.left = rocketX - 16 + "px";
+    }
+
+    function addLog(message) {
+      const log = document.getElementById("log");
+      const li = document.createElement("li");
+      li.textContent = message;
+      log.prepend(li);
+    }
+
+    function buildSegmentedBar() {
+      const container = document.getElementById("segmentsContainer");
+      container.innerHTML = "";
+      for (let i = 0; i <= maxDistance; i++) {
+        const seg = document.createElement("div");
+        seg.classList.add("progress-segment");
+        if (quizCells.includes(i)) {
+          seg.style.backgroundColor = "rgba(255, 223, 0, 0.4)";
+        } else if (wormholeCells.includes(i)) {
+          seg.style.backgroundColor = "rgba(0, 255, 150, 0.35)";
+        } else if (blackholeCells.includes(i)) {
+          seg.style.backgroundColor = "rgba(255, 80, 80, 0.35)";
+        } else {
+          seg.style.backgroundColor = "rgba(255,255,255,0.03)";
+        }
+
+        const tip = document.createElement("div");
+        tip.classList.add("tooltip");
+        if (quizCells.includes(i)) tip.textContent = `Quiz at ${i}`;
+        else if (wormholeCells.includes(i)) tip.textContent = `Wormhole at ${i}`;
+        else if (blackholeCells.includes(i)) tip.textContent = `Black Hole at ${i}`;
+        else tip.textContent = `Position ${i}`;
+        seg.appendChild(tip);
+
+        container.appendChild(seg);
+      }
+    }
+
+    window.onload = function () {
+      quizCells = generateSpacedCells(4, 8);
+      wormholeCells = generateSpacedCells(3, 10, quizCells);
+      blackholeCells = generateSpacedCells(3, 10, quizCells.concat(wormholeCells));
+      buildSegmentedBar();
+      updateStats();
+    };
+  </script>
+</body>
+</html>
