@@ -1,51 +1,150 @@
-<!-- welcome.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome & Sign Up</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <title>Dice Galaxy | Welcome</title>
+
+  <!-- Tailwind (just for styling) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+
   <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1500&q=80') center center / cover no-repeat;
-      font-family: 'Inter', sans-serif;
+    body{
+      margin:0;
+      min-height:100vh;
+      background:url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
+      font-family:Inter,system-ui,sans-serif;
     }
-    .glass {
-      background: rgba(60, 46, 110, 0.38);
-      backdrop-filter: blur(9px);
-      color: white;
-    }
-    .btn-glass {
-      background: linear-gradient(90deg, #3c2e6e 0%, #3754cd 100%);
-    }
+    .glass{background:rgba(60,46,110,.38);backdrop-filter:blur(9px);color:#fff;}
+    .btn-glass{background:linear-gradient(90deg,#3c2e6e 0%,#3754cd 100%);}
+    .btn-glass:hover{filter:brightness(1.1);}
+    select{background:transparent;color:#fff;}
+    option{background:#3c2e6e;}
   </style>
 </head>
-<body>
-  <div id="welcome" class="fixed inset-0 flex flex-col items-center justify-center text-white z-20">
-    <h1 class="text-5xl font-bold mb-4">Welcome!</h1>
-    <p class="text-xl text-purple-300 font-light">We're glad you're here...</p>
-  </div>
 
-  <form id="signup" class="hidden flex flex-col items-center w-full max-w-sm mx-auto mt-32">
-    <h1 class="text-4xl mb-10">Sign Up</h1>
-    <input type="text" placeholder="Username" class="glass w-full mb-5 px-6 py-3 rounded" />
-    <input type="password" placeholder="Password" class="glass w-full mb-7 px-6 py-3 rounded" />
-    <button type="submit" class="btn-glass w-full py-4 rounded text-white font-bold text-xl">Start Game</button>
-  </form>
+<body class="text-white">
+  <!-- splash --------------------------------------------------------- -->
+  <section id="splash" class="fixed inset-0 flex flex-col items-center justify-center z-20">
+    <h1 class="text-5xl font-bold mb-4">🎲 Welcome to Dice Galaxy !</h1>
+    <p class="text-xl text-purple-300 font-light">Preparing your cosmic journey…</p>
+  </section>
 
+  <!-- AUTH WRAPPER ---------------------------------------------------- -->
+  <section id="authWrap" class="hidden flex flex-col items-center w-full max-w-sm mx-auto mt-28 space-y-8">
+    <!-- mode toggle -->
+    <div class="space-x-4">
+      <button id="showSignUp"  class="btn-glass px-4 py-2 rounded">Sign Up</button>
+      <button id="showSignIn"  class="btn-glass px-4 py-2 rounded">Sign In</button>
+    </div>
+
+    <!-- SIGN-UP  form -->
+    <form id="signUpForm" class="hidden w-full space-y-4 glass p-6 rounded">
+      <h2 class="text-2xl font-bold mb-2 text-center">Create account</h2>
+      <input required minlength="3"  id="suUser" type="text"     placeholder="Username" class="w-full px-4 py-2 rounded glass">
+      <input required            id="suEmail" type="email"    placeholder="Email"    class="w-full px-4 py-2 rounded glass">
+      <input required minlength="6"  id="suPass" type="password" placeholder="Password" class="w-full px-4 py-2 rounded glass">
+
+      <div class="glass rounded px-4 py-2">
+        <select id="suRole" required class="w-full">
+          <option value=""           disabled selected>Select role</option>
+          <option value="PLAYER">🌟 Player</option>
+          <option value="ADMIN">👑 Admin</option>
+          <option value="GUEST">🔍 Guest</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-glass w-full py-2 rounded font-semibold">🚀 Start Game</button>
+    </form>
+
+    <!-- SIGN-IN form -->
+    <form id="signInForm" class="hidden w-full space-y-4 glass p-6 rounded">
+      <h2 class="text-2xl font-bold mb-2 text-center">Log in</h2>
+      <input required id="liUser" type="text"     placeholder="Username or Email" class="w-full px-4 py-2 rounded glass">
+      <input required id="liPass" type="password" placeholder="Password"          class="w-full px-4 py-2 rounded glass">
+      <button type="submit" class="btn-glass w-full py-2 rounded font-semibold">🔑 Enter Galaxy</button>
+    </form>
+
+    <!-- message area -->
+    <p id="msg" class="text-center text-sm text-red-300 hidden"></p>
+  </section>
+
+  <!-- JS -------------------------------------------------------------- -->
   <script>
-    setTimeout(() => {
-      document.getElementById('welcome').style.display = 'none';
-      document.getElementById('signup').classList.remove('hidden');
-    }, 3000);
+  document.addEventListener('DOMContentLoaded', () => {
 
-    document.getElementById('signup').addEventListener('submit', function (e) {
+    /* ------------------------------------------------ splash -> auth */
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      authWrap.classList.remove('hidden');
+      showSignUp.click();           // default view
+    }, 2500);
+
+    /* ------------------------------------------------ element refs */
+    const splash      = document.getElementById('splash');
+    const authWrap    = document.getElementById('authWrap');
+    const msg         = document.getElementById('msg');
+
+    const signUpForm  = document.getElementById('signUpForm');
+    const signInForm  = document.getElementById('signInForm');
+    const showSignUp  = document.getElementById('showSignUp');
+    const showSignIn  = document.getElementById('showSignIn');
+
+    /* ------------------------------------------------ mode toggle */
+    showSignUp.onclick = () => { signInForm.classList.add('hidden');
+                                 signUpForm.classList.remove('hidden');
+                                 msg.classList.add('hidden'); };
+
+    showSignIn.onclick = () => { signUpForm.classList.add('hidden');
+                                 signInForm.classList.remove('hidden');
+                                 msg.classList.add('hidden'); };
+
+    /* ------------------------------------------------ SIGN-UP submit */
+    signUpForm.addEventListener('submit', e => {
       e.preventDefault();
-      window.location.href = "main_game.html";
+
+      const body = new URLSearchParams({
+        username : suUser.value.trim(),
+        email    : suEmail.value.trim(),
+        password : suPass.value,
+        role     : suRole.value
+      });
+
+      fetch('/dice-galaxy/auth/register', {
+        method : 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body
+      })
+      .then(r => r.ok ? r.text() : Promise.reject(r.text()))
+      .then(txt => { alert(txt); window.location = 'login.html'; })
+      .catch(async err => {
+        msg.textContent = await err;
+        msg.classList.remove('hidden');
+      });
     });
+
+    /* ------------------------------------------------ SIGN-IN submit */
+    signInForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const body = new URLSearchParams({
+        username : liUser.value.trim(),
+        password : liPass.value
+      });
+
+      fetch('/dice-galaxy/auth/login', {
+        method : 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body
+      })
+      .then(r => r.ok ? r.text() : Promise.reject(r.text()))
+      .then(txt => { alert(txt); window.location = 'main_game.html'; })
+      .catch(async err => {
+        msg.textContent = await err;
+        msg.classList.remove('hidden');
+      });
+    });
+  });
   </script>
 </body>
 </html>
