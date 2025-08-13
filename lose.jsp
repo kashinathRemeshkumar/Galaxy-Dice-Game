@@ -1,0 +1,62 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dice Galaxy – You Lost</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-black text-white relative overflow-hidden" style="background-image: url('space_background.jpg'); background-size: cover; background-position: center;">
+  
+  <!-- Shooting Stars (optional visual effect) -->
+  <style>
+    .shooting-star {
+      position: fixed;
+      top: -4rem;
+      width: .4rem; height: .4rem;
+      background: linear-gradient(-45deg, #fff 0%, rgba(255, 255, 255, 0) 70%);
+      box-shadow: 0 0 6px 2px #fff;
+      transform: rotate(45deg);
+      animation: shoot 3s linear infinite;
+    }
+    @keyframes shoot {
+      0%   {transform: translate(0,0) rotate(45deg);}
+      100% {transform: translate(-100vw,100vh) rotate(45deg);}
+    }
+    .shooting-star:nth-child(2) { animation-delay: 5s; }
+    .shooting-star:nth-child(3) { animation-delay: 8s; }
+  </style>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+  <span class="shooting-star"></span>
+
+  <!-- Main Content -->
+  <h1 class="text-4xl md:text-5xl font-bold mb-6">You Lost, Captain!</h1>
+  <p class="text-xl mb-10 text-center">Mission failed. Planet Zeta is still out there...</p>
+
+  <div class="flex flex-col sm:flex-row gap-6">
+    <!-- Play Again Button -->
+    <button onclick="window.location.href='${pageContext.request.contextPath}/start';"
+      class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+      Play Again
+    </button>
+
+    <!-- Quit Button -->
+    <button onclick="quitGame();"
+      class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+      Quit
+    </button>
+  </div>
+
+  <script>
+    function quitGame() {
+      // Try to close tab (may not work unless opened via script)
+      window.close();
+
+      // Or redirect to a "goodbye" page or home
+      window.location.href = "${pageContext.request.contextPath}/";
+    }
+  </script>
+</body>
+</html>
